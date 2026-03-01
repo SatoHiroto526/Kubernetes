@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: api
+    labels: 
+        app: web-api
+spec:
+    # Deploymentオブジェクトを作成すると子のReplicaSetオブジェクトが作成され、ReplicaSetオブジェクトによって管理されるPodオブジェクトが作成される
+    replicas: 2
+    selector:
+        matchLabels:
+            app: web-api
+    # spec.strategy：新旧のReplicaSetのレプリカ数をどのように変更するかを指定
+    strategy: 
+        # spec.strategy.type：戦略の種類を指定
+        # RollingUpdate：順次入れ替え。古いPodを少しずつ削除して新しいPodに置き換える戦略
+        # Recreate：一斉入れ替え。古いPodをすべて削除してから新しいPodを作成する戦略
+        type: RollingUpdate
+        # spec.strategy.rollingUpdate：RollingUpdate戦略を選択した場合の詳細な設定
+        rollingUpdate:
+            # spec.strategy.rollingUpdate.maxUnavailable：入れ替え中に利用できないPodの最大数を指定
+            # 例えば、maxUnavailable: 1と指定した場合、入れ替え中に最大1つのPodが利用できない状態になることを許容する
+            # 例えば、maxUnavailable: 50%と指定した場合、入れ替え中に最大50%のPodが利用できない状態になることを許容する
+            maxUnavailable: 1
+            # spec.strategy.rollingUpdate.maxSurge：入れ替え中に作成できる新しいPodの最大数を指定
+            # 例えば、maxSurge: 1と指定した場合、入れ替え中に最大1つの新しいPodを作成することを許容する
+            # 例えば、maxSurge: 50%と指定した場合、入れ替え中に最大50%の新しいPodを作成することを許容する
+            maxSurge: 1
+    template:
+        metadata:
+            labels:
+                app: web-api
+        spec:
+            containers:
+            - name: api
+              image: localhost/api:v5 
+              ports:
+              - containerPort: 8080
+              command: ["/opt/jboss/wildfly/bin/standalone.sh"]
+              args: ["-b", "0.0.0.0"]

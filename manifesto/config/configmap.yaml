@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+    name: api-config
+# ConfigMapはspecの代わりにdataフィールドを使用して、key-value形式でデータを格納する
+data:
+    # 下記の場合、keyはenv、valueはHello, ConfigMap!!!となる
+    env: Hello, ConfigMap!!!

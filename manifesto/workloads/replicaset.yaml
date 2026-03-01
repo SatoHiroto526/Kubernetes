@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+    name: api
+    labels: 
+        app: web-api
+spec:
+    # spec.replicas：レプリカ数を指定
+    replicas: 2
+    # spec.selector：Podを識別するためのラベルセレクタを指定
+    selector:
+        # spec.selector.matchLabels：Podを識別するためのラベルセレクタを指定
+        matchLabels:
+            app: web-api
+    # spec.template：Podのsoec、metadataと同じ内容が記述できる（PodTemplate）
+    # ReplicaSetに紐づく子Podを作成
+    # 子Podの数がReplicaSetに記述したレプリカ数に一致する
+    template:
+        metadata:
+            # spec.template.metadata.labels：Podに付与されるラベルを指定
+            # spec.selector.matchLabels.appと同じ値を指定する必要がある（同じにしないとエラーになる）
+            labels:
+                app: web-api
+        spec:
+            containers:
+            - name: api
+              image: localhost/api:v5 
+              ports:
+              - containerPort: 8080
+              command: ["/opt/jboss/wildfly/bin/standalone.sh"]
+              args: ["-b", "0.0.0.0"]

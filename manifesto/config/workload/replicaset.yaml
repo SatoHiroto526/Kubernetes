@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+    name: api
+    labels: 
+        app: web-api
+spec:
+    replicas: 2
+    selector:
+        matchLabels:
+            app: web-api
+    template:
+        metadata:
+            labels:
+                app: web-api
+        spec:
+            containers:
+            - name: api
+              image: localhost/api:v5 
+              ports:
+              - containerPort: 8080
+              command: ["/opt/jboss/wildfly/bin/standalone.sh"]
+              args: ["-b", "0.0.0.0"]
+              env:
+              - name: ENV
+                valueFrom:
+                  configMapKeyRef:
+                    name: api-config
+                    key: env
+              volumeMounts:
+              - name: secret-volume
+                mountPath: /opt/jboss/wildfly/secret
+              # ReplicaSet／Deploymentの場合、volumesはspec.template.specに記述する
+              volumes:
+              - name: secret-volume
+                secret:
+                  secretName: api-secret
+                  items:
+                  - key: secret.properties
+                    path: ./secret.properties

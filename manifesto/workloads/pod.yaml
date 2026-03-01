@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Pod
+metadata:
+    name: api
+    labels: 
+        app: web-api
+spec:
+    # pod.spec.containersフィールド：そのPodに含めるコンテナ情報を記述
+    containers:
+    # pod.spec.containers[].name：Pod内で一意な識別子
+    - name: api
+      # pod.spec.containers[].image：コンテナイメージの指定
+      image: localhost/api:v5 
+      # pod.spec.containers[].ports[]：Pod外部からのアクセスに対して公開するポート番号
+      ports:
+      - containerPort: 8080
+      # pod.spec.containers[].commandとpod.spec.containers[].args：コンテナ起動時に実行するコマンドと引数を指定
+      # Wildflyはコンテナ起動時に自動で起動するので、コマンドと引数は省略可能
+      command: ["/opt/jboss/wildfly/bin/standalone.sh"]
+      args: ["-b", "0.0.0.0"]
+    # 複数のコンテを記述することも可能
+    # - name: sidecar
+    #   image: localhost/sidecar:v1
+
+# Pod内コンテナは同一のネットワーク空間を共有するため、コンテナ間でlocalhostを使用して通信可能
+# 一方で、コンテナ自身が利用するファイルシステムやプロセス空間は分離されているため、コンテナ間でファイルやプロセスを共有することはできない
