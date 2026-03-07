@@ -1,0 +1,49 @@
+apiVersion: v1
+kind: Pod
+metadata:
+    name: api
+    labels: 
+        app: web-api
+spec:
+    containers:
+    - name: api
+      image: localhost/api:v5 
+      ports:
+      - containerPort: 8080
+      command: ["/opt/jboss/wildfly/bin/standalone.sh"]
+      args: ["-b", "0.0.0.0"]
+      # ConfigMapから環境変数を参照するための設定
+      # spec.containers.envのvalueFromフィールドを使用して、ConfigMapから値を取得するように指定
+      env:
+      # 下記の場合、ENVという環境変数が作成され、その値はConfigMapのenvキーの値（Hello, ConfigMap!!!）となる
+      # ※OS上ではENV=Hello, ConfigMap!!!という環境変数が作成される
+      - name: ENV
+        valueFrom:
+          # Secrertから値を取得する場合はsecretKeyRefを使用
+          configMapKeyRef:
+            # ConfigMapのmetadata.nameを指定
+            name: api-config
+            # ConfigMapのdata.keyを指定
+            key: env
+      # ConfigMapやSecretをコンテナ内にマウントする場合、spec.containers.volumeMountsを使用して、コンテナ内のマウント先を指定する
+      volumeMounts:
+      # volumes[].nameと同じ値をspec.containers.volumeMounts[].nameに指定する必要がある（でないとエラーになる）
+      - name: secret-volume
+        # spec.containers.volumeMounts[].mountPathにコンテナ内でのマウント先を記載
+        mountPath: /opt/jboss/wildfly/secret
+    # ConfigMapやSecretをコンテナ内にマウントする場合、spec.volumesを使用して、ConfigMapやSecretをボリュームとして定義する
+    volumes:
+    # volumeの識別名を指定
+    - name: secret-volume
+      # ConfigMapをボリュームとして定義する場合はconfigMapフィールドを使用
+      # ConfigMapの場合はconfigMap
+      secret:
+        # Secretのmetadata.nameを指定
+        # ※ConfigMapの場合はname
+        secretName: api-secret
+        items:
+        # volumes[].name.secret.items[].keyにdataフィールドに記載されたキー（ファイル名）を記載
+        - key: secret.properties
+        # volumes[].name.secret.items[].pathにコンテナ内でのマウント先を記載
+        # spec.containers[].volumeMounts[].mountPathと組み合わせ、/opt/jboss/wildfly/secret/secret.propertiesというファイルが作成される
+          path: ./secret.properties

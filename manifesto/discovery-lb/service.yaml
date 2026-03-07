@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+    name: api-service
+spec:
+    # spec.portsフィールド：Serviceへの通信プロトコルとポート番号、Podへの通信のポート番号を指定する。
+    # 以下の場合、プロトコル：TCP、Servceへ接続する際のポート番号：80、Service⇒Podへ接続する際のポート番号：8080になる。
+    ports:
+        - protocol: TCP
+          port: 80
+          targetPort: 8080
+    # spec.selectorフィールドにルーティング先のPodのlabelsを指定する。
+    # 以下の場合、labelsがapp: web-apiとなっているPodにルーティングされる。
+    selector:
+        app: web-api
+    # spec.typeフィールド：接続タイプを指定する。
+    type: ClusterIP
+    # ClusterIP（デフォルト）：クラスタのみからアクセスできるService
+    # NodePort：ワーカーノードのIPアドレスとポート番号を指定することでクラスタ外部からのアクセスを可能にする
+    # LoadBalancer：パブリッククラウドが提供するロードバランサーを自動作成する。作成したロードバランサーにリクエストすることでServiceにアクセスできる
+    # ExternalName：クラスタ内のDNSに外部接続先のホスト名のエイリアスを作成する。クラスタ内からServiceにアクセスすることで、外部の接続先にアクセスできる

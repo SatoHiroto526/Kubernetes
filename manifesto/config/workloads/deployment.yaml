@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: api
+    labels: 
+        app: web-api
+spec:
+    replicas: 2
+    selector:
+        matchLabels:
+            app: web-api
+    strategy: 
+        type: RollingUpdate
+        rollingUpdate:
+            maxUnavailable: 1
+            maxSurge: 1
+    template:
+        metadata:
+            labels:
+                app: web-api
+        spec:
+            containers:
+            - name: api
+              image: localhost/api:v5 
+              ports:
+              - containerPort: 8080
+              command: ["/opt/jboss/wildfly/bin/standalone.sh"]
+              args: ["-b", "0.0.0.0"]
+              env:
+              - name: ENV
+                valueFrom:
+                  configMapKeyRef:
+                    name: api-config
+                    key: env
+              volumeMounts:
+              - name: secret-volume
+                mountPath: /opt/jboss/wildfly/secret
+            volumes:
+              - name: secret-volume
+                secret:
+                    secretName: api-secret
+                    items:
+                    - key: secret.properties
+                      path: ./secret.properties

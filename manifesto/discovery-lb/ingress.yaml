@@ -1,0 +1,45 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+    name: api-ingress
+    # annotations: # Ingressコントローラー固有の設定がある場合はmetadata.anotationsに記載する。
+    # 例）AWSのALBと連携して動作するIngresコントローラーを利用する場合↓
+    # annotations:
+    #   alb.ingress.kubernetes.io/schema: internet-facing
+    #   alb.ingress.kubernetes.io/target-typr: ip
+spec:
+    # ingressClassName: # 利用するロードバランサーの実装を指定する場合はspec.ingressClassNameに記載する。
+    # 例）ロードバランサーにAWSのALBを利用する場合↓
+    # ingressClassName: alb
+    rules:
+    # Ingressにアクセスするには、spec.rules[].hostに記載した名前にhttp／httpsでアクセスする。
+    # 正確には以下の流れである。
+    # 接続元のhostsにて、spec.rules[].hostに記載した名前にアクセスすると、クラスターのIPアドレスに飛ぶよう名前解決設定する。
+    # リクエストの際にFQDNに指定した名前は、リクエストのHostヘッダーに記載される。
+    # IngressコントローラーはHostヘッダーの情報をを主t櫛、該当するIngressにルーティングする。
+    - host: sample-web-api.jp
+      # spec.rules[].http以下はServiceへの転送設定
+      http:
+        # spec.rules[].http.paths[].pathが/、spec.rules[].http.paths[].pathTypeがPrefixなので、
+        # 本IngressへのアクセスのすべてがバックエンドのServiceにルーティングされる。
+        paths:
+            path: /
+            pathType: Prefix
+            # spec.rules[].http.paths[].backendではルーティング先のServiceを指定
+            backend:
+                # 以下例では、metadata.nameがapi-serviceのServiceに80番ポートでルーティングする。
+                service:
+                    name: api-service
+                    port: 
+                        number: 80
+      # 例えば以下のようにpaths配下を指定すると、/webappにリクエストされた際に8080番でSeviceにルーティングされる。
+      # 複数のpathsを指定することで、パスによってルーティング先を変えることができる。
+      # -path: /webapp
+      #  pathType: Prefix
+      #     backend:
+      #         service:
+      #             name: webapp
+      #             port:
+      #                 number: 8080
+
+    
